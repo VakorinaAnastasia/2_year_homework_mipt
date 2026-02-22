@@ -1,0 +1,6 @@
+ОС: Windows
+Компилятор: g++ (MinGW)
+Оболочка: cmd
+
+Команда:
+g++ test.cpp -L. -lmiptlib -o test_static.exe

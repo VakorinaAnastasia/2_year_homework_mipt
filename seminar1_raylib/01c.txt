@@ -1,0 +1,6 @@
+ОС: Windows
+Компилятор: g++ (MinGW)
+Оболочка: cmd
+
+Команда:
+g++ -shared -o miptlib.dll algebra.cpp geometry.cpp statistics.cpp -Wl,--out-implib,libmiptlib.dll.a

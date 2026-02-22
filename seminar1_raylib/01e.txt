@@ -1,0 +1,9 @@
+ОС: Windows
+Компилятор: g++ (MinGW)
+Оболочка: cmd
+
+Команды компиляции:
+g++ 01e_test.cpp -o test_delayed.exe -ldl
+
+Запуск (библиотека miptlib.dll должна быть в той же папке):
+test_delayed.exe
