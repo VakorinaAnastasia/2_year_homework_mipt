@@ -1,47 +1,83 @@
-#include <SFML/Graphics.hpp>
+#include <raylib.h>
 #include <vector>
 
 class Toggle {
-    sf::RectangleShape mShape;
+private:
+    Rectangle mRect;
     bool mState;
-    sf::Color mOnColor, mOffColor;
+    Color mOnColor;
+    Color mOffColor;
+    float mRadius;
+
 public:
-    Toggle(sf::Vector2f position, sf::Vector2f size, bool initialState = false)
-        : mState(initialState), mOnColor(sf::Color::Green), mOffColor(sf::Color::Red) {
-        mShape.setSize(size);
-        mShape.setOrigin(size/2.f);
-        mShape.setPosition(position);
-        mShape.setFillColor(mState ? mOnColor : mOffColor);
-        mShape.setOutlineColor(sf::Color::White);
-        mShape.setOutlineThickness(2);
+    Toggle(Vector2 position, Vector2 size, bool initialState = false)
+        : mState(initialState), mOnColor(GREEN), mOffColor(LIGHTGRAY)
+    {
+        mRect = { position.x, position.y, size.x, size.y };
+        mRadius = size.y / 2.0f - 2.0f;
     }
-    void handleEvent(const sf::Event& event, const sf::RenderWindow& window) {
-        if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-            sf::Vector2f mouse = window.mapPixelToCoords({event.mouseButton.x, event.mouseButton.y});
-            if (mShape.getGlobalBounds().contains(mouse)) {
+
+    void setPosition(Vector2 position) {
+        mRect.x = position.x;
+        mRect.y = position.y;
+    }
+
+    void handleEvent() {
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            Vector2 mouse = GetMousePosition();
+            if (CheckCollisionPointRec(mouse, mRect)) {
                 mState = !mState;
-                mShape.setFillColor(mState ? mOnColor : mOffColor);
             }
         }
     }
-    void draw(sf::RenderWindow& window) const { window.draw(mShape); }
+
+    void draw() const {
+        Color bgColor = mState ? mOnColor : mOffColor;
+        float roundness = 0.5f;
+        DrawRectangleRounded(mRect, roundness, 0, bgColor);
+        DrawRectangleRoundedLines(mRect, roundness, 0, WHITE);
+
+        float handleX = mState ? mRect.x + mRect.width - mRadius - 2 : mRect.x + mRadius + 2;
+        float handleY = mRect.y + mRect.height / 2;
+        DrawCircle(handleX, handleY, mRadius, WHITE);
+    }
 };
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(400, 600), "Toggles");
-    window.setFramerateLimit(60);
-    std::vector<Toggle> toggles;
-    for (int i = 0; i < 10; ++i)
-        toggles.emplace_back(sf::Vector2f(200, 50 + i * 50), sf::Vector2f(80, 30));
+    InitWindow(800, 800, "Toggles with Raylib");
+    SetTargetFPS(60);
 
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) window.close();
-            for (auto& t : toggles) t.handleEvent(event, window);
-        }
-        window.clear(sf::Color::Black);
-        for (const auto& t : toggles) t.draw(window);
-        window.display();
+    std::vector<Toggle> toggles;
+    float toggleWidth = 80;
+    float toggleHeight = 40;
+    for (int i = 0; i < 10; ++i) {
+        toggles.emplace_back(Vector2{0, 0}, Vector2{toggleWidth, toggleHeight}, false);
     }
+
+    while (!WindowShouldClose()) {
+        int screenWidth = GetScreenWidth();
+        int screenHeight = GetScreenHeight();
+        float startY = screenHeight * 0.1f;
+        float spacing = toggleHeight * 1.5f;
+        for (int i = 0; i < 10; ++i) {
+            float x = (screenWidth - toggleWidth) / 2;
+            float y = startY + i * spacing;
+            toggles[i].setPosition({x, y});
+        }
+
+        for (auto& t : toggles) {
+            t.handleEvent();
+        }
+
+        BeginDrawing();
+        ClearBackground(BLACK);
+
+        for (const auto& t : toggles) {
+            t.draw();
+        }
+
+        EndDrawing();
+    }
+
+    CloseWindow();
 }
